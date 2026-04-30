@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Барномаи Молия</title>
+
+<style>
+:root{
+  --bg1:#0f172a;
+  --bg2:#1e3a8a;
+  --card:rgba(255,255,255,0.95);
+  --primary:#2563eb;
+  --primary2:#1d4ed8;
+  --green:#16a34a;
+  --red:#dc2626;
+  --text:#0f172a;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:system-ui, Arial;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  color:var(--text);
+}
+
+.header{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  color:white;
+  padding:18px;
+  text-align:center;
+  font-size:22px;
+  font-weight:700;
+  border-bottom:1px solid rgba(255,255,255,0.15);
+}
+
+.hero{
+  max-width:900px;
+  margin:20px auto;
+  padding:0 20px;
+}
+
+.hero img{
+  width:100%;
+  max-height:220px;
+  object-fit:cover;
+  border-radius:16px;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:var(--card);
+  padding:15px;
+  border-radius:16px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.25);
+  margin-bottom:15px;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  background:linear-gradient(135deg,var(--primary),var(--primary2));
+  color:white;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+button:hover{transform:scale(1.05);}
+
+.summary{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+.box{
+  background:var(--card);
+  padding:12px;
+  border-radius:14px;
+  text-align:center;
+  box-shadow:0 5px 15px rgba(0,0,0,0.15);
+}
+
+.green{color:var(--green); font-weight:700;}
+.red{color:var(--red); font-weight:700;}
+.blue{color:var(--primary); font-weight:700;}
+
+h3{margin:10px 0;}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+  border-radius:14px;
+  overflow:hidden;
+}
+
+th{
+  background:var(--primary);
+  color:white;
+  padding:10px;
+}
+
+td{
+  padding:10px;
+  text-align:center;
+  border-bottom:1px solid #eee;
+}
+
+tr:hover{background:#f1f5f9;}
+</style>
+</head>
+<body>
+
+<div class="header">Барномаи Молия</div>
+
+<div class="hero">
+  <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=60">
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>Иловаи Даромад</h3>
+    <input id="incomeDesc" placeholder="Тавсиф">
+    <input id="incomeAmount" type="number" placeholder="Маблағ">
+    <button onclick="addIncome()">Иловаи Даромад</button>
+  </div>
+
+  <div class="card">
+    <h3>Иловаи Хароҷот</h3>
+    <input id="expenseDesc" placeholder="Тавсиф">
+    <input id="expenseAmount" type="number" placeholder="Маблағ">
+    <button onclick="addExpense()">Иловаи Хароҷот</button>
+  </div>
+
+  <div class="summary">
+    <div class="box">
+      <div class="green">Даромад</div>
+      <div id="income">0</div>
+    </div>
+    <div class="box">
+      <div class="red">Хароҷот</div>
+      <div id="expense">0</div>
+    </div>
+    <div class="box">
+      <div class="blue">Бақия</div>
+      <div id="balance">0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Transaction Table</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Тавсиф</th>
+          <th>Навъ</th>
+          <th>Маблағ</th>
+          <th>Сана</th>
+        </tr>
+      </thead>
+      <tbody id="table"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("finance")) || [];
+
+function addIncome(){
+  let d=document.getElementById("incomeDesc").value.trim();
+  let a=Number(document.getElementById("incomeAmount").value);
+  if(!d || isNaN(a)) return;
+
+  data.push({d,a,t:"income",date:new Date().toLocaleString()});
+  localStorage.setItem("finance",JSON.stringify(data));
+
+  document.getElementById("incomeDesc").value="";
+  document.getElementById("incomeAmount").value="";
+
+  render();
+}
+
+function addExpense(){
+  let d=document.getElementById("expenseDesc").value.trim();
+  let a=Number(document.getElementById("expenseAmount").value);
+  if(!d || isNaN(a)) return;
+
+  data.push({d,a,t:"expense",date:new Date().toLocaleString()});
+  localStorage.setItem("finance",JSON.stringify(data));
+
+  document.getElementById("expenseDesc").value="";
+  document.getElementById("expenseAmount").value="";
+
+  render();
+}
+
+function render(){
+  let income=0, expense=0, table="";
+
+  data.forEach(i=>{
+    if(!i || !i.d || !i.t || isNaN(i.a)) return;
+
+    let amt=Number(i.a);
+
+    if(i.t=="income") income+=amt;
+    if(i.t=="expense") expense+=amt;
+
+    table+=`<tr>
+      <td>${i.d}</td>
+      <td>${i.t=="income"?"Даромад":"Хароҷот"}</td>
+      <td>${amt}</td>
+      <td>${i.date || "-"}</td>
+    </tr>`;
+  });
+
+  document.getElementById("income").innerText=income;
+  document.getElementById("expense").innerText=expense;
+  document.getElementById("balance").innerText=income-expense;
+  document.getElementById("table").innerHTML=table;
+}
+
+render();
+</script>
+
+</body>
+</html>
